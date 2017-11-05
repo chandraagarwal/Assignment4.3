@@ -1,0 +1,110 @@
+-- loading file
+grunt> lines = load 'wordcount' as (line:chararray);
+grunt> dump lines
+(Tony is 10 years old.)
+(His father works in a factory.)
+(His mother is a housewife.)
+(He has a little sister aged 5.)
+
+-- split line into words using Tokenize
+grunt> wordsinline = foreach lines generate TOKENIZE(line) as words; 
+grunt> dump wordsinline
+({(Tony),(is),(10),(years),(old.)})
+({(His),(father),(works),(in),(a),(factory.)})
+({(His),(mother),(is),(a),(housewife.)})
+({(He),(has),(a),(little),(sister),(aged),(5.)})
+
+grunt> describe wordsinline
+wordsinline: {words: {tuple_of_tokens: (token: chararray)}}
+
+-- Count words in line
+grunt> wordcountlinline = foreach wordsinline generate COUNT(*)  as count;
+grunt> dump wordcountlinline
+(5)
+(6)
+(5)
+(7)
+
+---------------------------------------
+--Count usage of each word in file
+-------------------------------------
+-- Flatten the bag
+grunt> allwords = foreach wordsinline generate FLATTEN(words) as word;
+grunt> describe allwords
+allwords: {word: chararray}
+grunt> dump allwords
+(Tony)
+(is)
+(10)
+(years)
+(old.)
+(His)
+(father)
+(works)
+(in)
+(a)
+(factory.)
+(His)
+(mother)
+(is)
+(a)
+(housewife.)
+(He)
+(has)
+(a)
+(little)
+(sister)
+(aged)
+(5.)
+
+-- Grouping the words
+grouped = GROUP allwords by word;
+grunt> dump grouped
+(a,{(a),(a),(a)})
+(10,{(10)})
+(5.,{(5.)})
+(He,{(He)})
+(in,{(in)})
+(is,{(is),(is)})
+(His,{(His),(His)})
+(has,{(has)})
+(Tony,{(Tony)})
+(aged,{(aged)})
+(old.,{(old.)})
+(works,{(works)})
+(years,{(years)})
+(father,{(father)})
+(little,{(little)})
+(mother,{(mother)})
+(sister,{(sister)})
+(factory.,{(factory.)})
+(housewife.,{(housewife.)})
+
+--COUNT words
+grunt> wordcount = foreach grouped GENERATE group, COUNT(allwords) as count;
+grunt> dump wordcount
+(a,3)
+(10,1)
+(5.,1)
+(He,1)
+(in,1)
+(is,2)
+(His,2)
+(has,1)
+(Tony,1)
+(aged,1)
+(old.,1)
+(works,1)
+(years,1)
+(father,1)
+(little,1)
+(mother,1)
+(sister,1)
+(factory.,1)
+(housewife.,1)
+
+-------------------------------------------------------
+
+
+
+
